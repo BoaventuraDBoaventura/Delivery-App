@@ -1,83 +1,128 @@
 
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
+declare const L: any;
 
 const OrderStatus: React.FC = () => {
   const navigate = useNavigate();
+  const mapRef = useRef<any>(null);
+  const driverMarkerRef = useRef<any>(null);
+  const [driverPos, setDriverPos] = useState({ lat: -23.5650, lng: -46.6500 });
+  const customerPos = { lat: -23.5617, lng: -46.6558 };
+
+  useEffect(() => {
+    if (!mapRef.current) {
+      const map = L.map('tracking-map', {
+        center: [(-23.5650 + -23.5617) / 2, (-46.6500 + -46.6558) / 2],
+        zoom: 15,
+        zoomControl: false
+      });
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OSM'
+      }).addTo(map);
+
+      // Customer Marker
+      L.marker([customerPos.lat, customerPos.lng], {
+        icon: L.divIcon({
+          className: 'customer-icon',
+          html: `<div style="background-color: #3b82f6; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center;"><span class="material-symbols-outlined" style="color: white; font-size: 16px;">home</span></div>`,
+          iconSize: [30, 30],
+          iconAnchor: [15, 15]
+        })
+      }).addTo(map);
+
+      // Driver Marker
+      driverMarkerRef.current = L.marker([driverPos.lat, driverPos.lng], {
+        icon: L.divIcon({
+          className: 'driver-icon',
+          html: `<div style="background-color: #ec7f13; width: 40px; height: 40px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 15px rgba(236, 127, 19, 0.4); display: flex; align-items: center; justify-content: center;"><span class="material-symbols-outlined" style="color: white; font-size: 20px;">moped</span></div>`,
+          iconSize: [40, 40],
+          iconAnchor: [20, 20]
+        })
+      }).addTo(map);
+
+      mapRef.current = map;
+    }
+
+    // Simulate movement
+    const interval = setInterval(() => {
+      setDriverPos(prev => {
+        const nextLat = prev.lat + (customerPos.lat - prev.lat) * 0.05;
+        const nextLng = prev.lng + (customerPos.lng - prev.lng) * 0.05;
+        if (driverMarkerRef.current) {
+          driverMarkerRef.current.setLatLng([nextLat, nextLng]);
+        }
+        return { lat: nextLat, lng: nextLng };
+      });
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="flex-1 flex flex-col bg-background h-full relative overflow-hidden">
       <header className="absolute top-0 left-0 right-0 z-50 p-6 flex justify-between items-center">
-        <button onClick={() => navigate('/')} className="size-10 rounded-full bg-white/90 shadow-md flex items-center justify-center text-gray-900"><span className="material-symbols-outlined">arrow_back</span></button>
-        <div className="bg-white/90 px-4 py-1.5 rounded-full shadow-md text-xs font-bold uppercase tracking-wide">Pedido #4821</div>
-        <button className="size-10 rounded-full bg-white/90 shadow-md flex items-center justify-center text-gray-900"><span className="material-symbols-outlined">help</span></button>
+        <button onClick={() => navigate('/')} className="size-10 rounded-full bg-white/90 shadow-md flex items-center justify-center text-gray-900 active:scale-90 transition-transform"><span className="material-symbols-outlined">arrow_back</span></button>
+        <div className="bg-white/90 px-4 py-1.5 rounded-full shadow-md text-[10px] font-black uppercase tracking-widest">Pedido #4821</div>
+        <div className="size-10"></div>
       </header>
 
-      <div className="h-[45%] w-full bg-gray-200 relative">
-        {/* Mock Map Background */}
-        <div className="absolute inset-0 bg-[url('https://picsum.photos/seed/map/800/800')] bg-cover opacity-50 grayscale"></div>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="relative">
-            <div className="absolute inset-0 bg-primary/30 rounded-full animate-ping"></div>
-            <div className="relative size-16 bg-white rounded-full shadow-lg border-2 border-primary flex items-center justify-center p-1">
-              <div className="w-full h-full rounded-full bg-cover" style={{ backgroundImage: `url(https://picsum.photos/seed/logo1/200/200)` }}></div>
-            </div>
-            <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-white px-3 py-1 rounded-lg shadow-md text-[10px] font-bold text-primary">PREPARANDO</div>
+      <div className="h-[45%] w-full bg-gray-100 relative z-0">
+        <div id="tracking-map" className="h-full w-full"></div>
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-2xl shadow-xl flex items-center gap-3 z-10">
+          <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+            <span className="material-symbols-outlined text-[18px] animate-bounce">moped</span>
           </div>
+          <p className="text-[10px] font-black uppercase text-gray-900 tracking-tighter">João está a caminho!</p>
         </div>
       </div>
 
-      <div className="flex-1 -mt-8 bg-white rounded-t-[2.5rem] shadow-2xl relative z-10 p-6 flex flex-col">
-        <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 bg-green-50 text-green-600 px-4 py-1.5 rounded-full mb-3 text-sm font-bold">
-            <span className="material-symbols-outlined text-[18px]">check_circle</span>
-            Pedido Confirmado!
+      <div className="flex-1 -mt-8 bg-white rounded-t-[2.5rem] shadow-2xl relative z-10 p-6 flex flex-col border-t border-gray-100">
+        <div className="w-12 h-1.5 bg-gray-100 rounded-full mx-auto mb-8"></div>
+        
+        <div className="flex items-center gap-4 mb-8">
+          <div className="flex-1">
+             <h1 className="text-2xl font-black text-gray-900 leading-tight">Chegada em 8-12 min</h1>
+             <p className="text-xs text-gray-400 font-medium">Seu pedido está sendo transportado.</p>
           </div>
-          <h1 className="text-2xl font-black text-gray-900 mb-1">Previsão: 19:40 - 19:50</h1>
-          <p className="text-sm text-gray-400 font-medium">O restaurante está preparando seu pedido.</p>
-        </div>
-
-        <div className="mb-8 relative px-2">
-          <div className="absolute top-4 left-4 right-4 h-0.5 bg-gray-100 z-0"></div>
-          <div className="absolute top-4 left-4 w-1/3 h-0.5 bg-primary z-0"></div>
-          <div className="relative z-10 flex justify-between">
-             <div className="flex flex-col items-center gap-2">
-               <div className="size-8 rounded-full bg-primary text-white flex items-center justify-center"><span className="material-symbols-outlined text-[14px]">receipt_long</span></div>
-               <span className="text-[10px] font-bold text-primary">Confirmado</span>
-             </div>
-             <div className="flex flex-col items-center gap-2">
-               <div className="size-8 rounded-full bg-white border-2 border-primary text-primary flex items-center justify-center animate-pulse"><span className="material-symbols-outlined text-[14px]">skillet</span></div>
-               <span className="text-[10px] font-bold text-gray-900">Preparando</span>
-             </div>
-             <div className="flex flex-col items-center gap-2 opacity-30">
-               <div className="size-8 rounded-full bg-gray-200 flex items-center justify-center"><span className="material-symbols-outlined text-[14px]">moped</span></div>
-               <span className="text-[10px] font-bold">A caminho</span>
-             </div>
-             <div className="flex flex-col items-center gap-2 opacity-30">
-               <div className="size-8 rounded-full bg-gray-200 flex items-center justify-center"><span className="material-symbols-outlined text-[14px]">home</span></div>
-               <span className="text-[10px] font-bold">Entregue</span>
-             </div>
+          <div className="size-16 bg-primary/5 rounded-3xl flex items-center justify-center text-primary">
+            <span className="material-symbols-outlined text-4xl">timer</span>
           </div>
         </div>
 
-        <div className="bg-background p-4 rounded-3xl border border-gray-100 mb-6">
-          <div className="flex items-center gap-3 mb-4 border-b border-gray-100 pb-4">
-            <div className="size-10 rounded-full bg-gray-200 border border-gray-300 bg-cover" style={{ backgroundImage: `url(https://picsum.photos/seed/logo1/200/200)` }}></div>
-            <div className="flex-1">
-              <h3 className="font-bold text-sm text-gray-900">Sabor da Vila</h3>
-              <p className="text-xs text-gray-400">Rua das Flores, 123 • Restaurante</p>
-            </div>
-          </div>
-          <div className="flex gap-3">
-            <button className="flex-1 h-10 bg-white rounded-xl text-gray-900 font-bold text-xs shadow-sm flex items-center justify-center gap-2"><span className="material-symbols-outlined text-sm">call</span> Ligar</button>
-            <button className="flex-1 h-10 bg-white rounded-xl text-gray-900 font-bold text-xs shadow-sm flex items-center justify-center gap-2"><span className="material-symbols-outlined text-sm">chat</span> Chat</button>
-          </div>
+        <div className="space-y-6">
+           <div className="flex items-center gap-4">
+              <div className="size-12 rounded-2xl border border-gray-100 bg-cover" style={{ backgroundImage: `url(https://picsum.photos/seed/driver/200/200)` }}></div>
+              <div className="flex-1">
+                <h4 className="font-bold text-gray-900 text-sm">João Oliveira</h4>
+                <div className="flex items-center gap-1 text-[10px] font-bold text-gray-400">
+                   <span className="material-symbols-outlined text-[12px] text-yellow-400 fill-current">star</span>
+                   4.9 • Honda Biz (ABC-1234)
+                </div>
+              </div>
+              <div className="flex gap-2">
+                 <button className="size-10 bg-gray-50 rounded-xl flex items-center justify-center text-gray-900 shadow-sm active:scale-90"><span className="material-symbols-outlined text-[20px]">call</span></button>
+                 <button className="size-10 bg-primary text-white rounded-xl flex items-center justify-center shadow-lg shadow-primary/20 active:scale-90"><span className="material-symbols-outlined text-[20px]">chat</span></button>
+              </div>
+           </div>
+
+           <div className="bg-gray-50 rounded-[2rem] p-5 border border-gray-100">
+              <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Detalhes da Entrega</h3>
+              <div className="flex items-start gap-4">
+                 <div className="size-8 rounded-xl bg-white shadow-sm flex items-center justify-center text-primary"><span className="material-symbols-outlined text-[18px]">location_on</span></div>
+                 <div className="flex-1">
+                    <p className="text-xs font-bold text-gray-900">Avenida Paulista, 1578</p>
+                    <p className="text-[10px] text-gray-400 mt-0.5 font-medium">Bela Vista, São Paulo - SP</p>
+                 </div>
+              </div>
+           </div>
         </div>
 
-        <button className="mt-auto w-full h-14 bg-white border border-gray-100 rounded-2xl text-gray-900 font-bold flex items-center justify-center gap-2 shadow-sm">
-          <span className="material-symbols-outlined text-red-500">support_agent</span>
-          Preciso de Ajuda
+        <button className="mt-auto w-full h-14 bg-white border border-gray-100 rounded-2xl text-gray-900 font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-2 active:scale-95 transition-all">
+          <span className="material-symbols-outlined text-red-500 text-[18px]">support_agent</span>
+          Preciso de ajuda com o pedido
         </button>
       </div>
     </div>

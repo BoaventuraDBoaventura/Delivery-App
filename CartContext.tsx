@@ -4,7 +4,7 @@ import { CartItem, Dish } from './types';
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (dish: Dish, quantity: number, notes?: string) => void;
+  addToCart: (dish: Dish, quantity: number, notes?: string, fulfillmentMethod?: 'delivery' | 'pickup') => void;
   removeFromCart: (uniqueId: string) => void;
   updateQuantity: (uniqueId: string, quantity: number) => void;
   clearCart: () => void;
@@ -16,8 +16,9 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cart, setCart] = useState<(CartItem & { uniqueKey: string })[]>([]);
 
-  const addToCart = (dish: Dish, quantity: number, notes?: string) => {
-    const uniqueKey = `${dish.id}-${notes || ''}`;
+  const addToCart = (dish: Dish, quantity: number, notes?: string, fulfillmentMethod: 'delivery' | 'pickup' = 'delivery') => {
+    // Unique key now includes fulfillmentMethod to distinguish the same dish with different pickup choices
+    const uniqueKey = `${dish.id}-${fulfillmentMethod}-${notes || ''}`;
     
     setCart(prev => {
       const existingIndex = prev.findIndex(item => item.uniqueKey === uniqueKey);
@@ -29,7 +30,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
         return newCart;
       }
-      return [...prev, { ...dish, quantity, notes, uniqueKey }];
+      return [...prev, { ...dish, quantity, notes, uniqueKey, fulfillmentMethod }];
     });
   };
 
