@@ -1,0 +1,7 @@
+{
+  "name": "Delivery App",
+  "description": "A high-fidelity food delivery application featuring a rich menu, real-time cart management, and seamless ordering flow, inspired by top-tier delivery platforms.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
