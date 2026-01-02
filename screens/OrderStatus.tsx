@@ -64,7 +64,7 @@ const OrderStatus: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col bg-background h-full relative overflow-hidden">
       <header className="absolute top-0 left-0 right-0 z-50 p-6 flex justify-between items-center">
-        <button onClick={() => navigate('/')} className="size-10 rounded-full bg-white/90 shadow-md flex items-center justify-center text-gray-900 active:scale-90 transition-transform"><span className="material-symbols-outlined">arrow_back</span></button>
+        <button onClick={() => navigate(-1)} className="size-10 rounded-full bg-white/90 shadow-md flex items-center justify-center text-gray-900 active:scale-90 transition-transform"><span className="material-symbols-outlined font-bold">arrow_back</span></button>
         <div className="bg-white/90 px-4 py-1.5 rounded-full shadow-md text-[10px] font-black uppercase tracking-widest">Pedido #4821</div>
         <div className="size-10"></div>
       </header>

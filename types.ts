@@ -9,6 +9,7 @@ export interface Location {
 
 export interface Dish {
   id: string;
+  restaurantId: string;
   name: string;
   description: string;
   price: number;

@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RESTAURANTS } from '../constants';
+import BottomNav from '../components/BottomNav';
 
 const Favorites: React.FC = () => {
   const navigate = useNavigate();
@@ -32,9 +33,9 @@ const Favorites: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-5 space-y-4">
-        {RESTAURANTS.map(res => (
-          <div key={res.id} className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
+      <div className="flex-1 overflow-y-auto p-5 space-y-4 pb-28 no-scrollbar">
+        {RESTAURANTS.slice(0, 3).map(res => (
+          <div key={res.id} onClick={() => navigate(`/restaurant/${res.id}`)} className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 active:scale-[0.98] transition-all">
             <div className="size-20 rounded-xl bg-cover" style={{ backgroundImage: `url(${res.logo})` }}></div>
             <div className="flex-1 min-w-0">
               <div className="flex justify-between items-start">
@@ -54,7 +55,15 @@ const Favorites: React.FC = () => {
             </div>
           </div>
         ))}
+        
+        {RESTAURANTS.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-20 text-center opacity-40">
+            <span className="material-symbols-outlined text-6xl mb-4">favorite_border</span>
+            <p className="font-bold text-gray-900">Nenhum favorito ainda</p>
+          </div>
+        )}
       </div>
+      <BottomNav active="favorites" />
     </div>
   );
 };

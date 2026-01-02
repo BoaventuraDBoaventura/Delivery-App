@@ -3,7 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface BottomNavProps {
-  active: 'home' | 'search' | 'orders' | 'profile';
+  active: 'home' | 'favorites' | 'orders' | 'profile';
 }
 
 const BottomNav: React.FC<BottomNavProps> = ({ active }) => {
@@ -20,10 +20,11 @@ const BottomNav: React.FC<BottomNavProps> = ({ active }) => {
           <span className="text-[10px] font-bold">Início</span>
         </button>
         <button 
-          className={`flex flex-col items-center justify-center gap-1 ${active === 'search' ? 'text-primary' : 'text-gray-400'}`}
+          onClick={() => navigate('/favorites')}
+          className={`flex flex-col items-center justify-center gap-1 ${active === 'favorites' ? 'text-primary' : 'text-gray-400'}`}
         >
-          <span className="material-symbols-outlined text-[28px]">search</span>
-          <span className="text-[10px] font-medium">Buscar</span>
+          <span className={`material-symbols-outlined text-[28px] ${active === 'favorites' ? 'fill-current' : ''}`}>favorite</span>
+          <span className="text-[10px] font-medium">Favoritos</span>
         </button>
         <button 
           onClick={() => navigate('/orders')}
